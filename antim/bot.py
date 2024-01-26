@@ -66,7 +66,7 @@ def echo_message(message):
 def echo_message(message):
     user_id = message.from_user.id
     if user_id not in ALLOWED_USER:
-        bot.send_message(message.chat.id, 'Ярик сейчас online! Если вы хотите такого же бота пишите @rikwf')
+        bot.send_message(message.chat.id, 'Пользователь сейчас online! Если вы хотите такого же бота пишите @rikwf')
     else:
         bot.send_message(message.chat.id, 'bot is online')
 

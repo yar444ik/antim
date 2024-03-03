@@ -1,5 +1,4 @@
-import os, telebot, tempfile, cv2
-
+import os, telebot, tempfile, cv2, win10toast
 from PIL import ImageGrab
 
 API_TOKEN = '...' # вместо точек апи бота
@@ -27,6 +26,7 @@ def send_welcome(message):
     markup.add("Выключить")
     markup.add("Перезагрузить")
     markup.add("Вебка")
+    markup.add("Уведомление")
     bot.send_message(message.chat.id, 'Доброго времени суток! :3 👋', reply_markup=markup)
 
 @bot.message_handler(regexp='выключить')
@@ -77,5 +77,39 @@ def echo_message(message):
         pass
     else:
         bot.send_message(message.chat.id, 'У вас нет прав! Если вы хотите такого же бота пишите @rikwf')
+
+@bot.message_handler(regexp='уведомление')
+def start_notification(message):
+   user_id = message.from_user.id
+   if user_id in ALLOWED_USER:
+       bot.send_message(message.chat.id, 'Введите текст уведомления:')
+       bot.register_next_step_handler(message, get_notification_text)
+   else:
+       bot.send_message(message.chat.id, 'У вас нет прав! Если вы хотите такого же бота пишите @rikwf')
+
+def get_notification_text(message):
+    user_id = message.from_user.id
+    if user_id in ALLOWED_USER:
+        msg = message.text
+        bot.send_message(message.chat.id, f'Вы указали текст уведомления: {msg}')
+        bot.send_message(message.chat.id, 'Вы уверены, что хотите отправить это уведомление?')
+        bot.register_next_step_handler(message, send_notification, msg)
+    else:
+        bot.send_message(message.chat.id, 'У вас нет прав! Если вы хотите такого же бота пишите @rikwf')
+
+def send_notification(message, msgu):
+    user_id = message.from_user.id
+    if user_id in ALLOWED_USER:
+        if message.text.lower() == 'да':
+            toast = win10toast.ToastNotifier()
+            toast.show_toast(title='Владелец компьютера говорит:', msg=msgu, duration=10)
+            bot.send_message(message.chat.id, 'Уведомление отправлено.')
+        elif message.text.lower() == 'нет':
+            bot.send_message(message.chat.id, 'Уведомление не отправлено.')
+        else:
+            bot.send_message(message.chat.id, 'Неверный ответ. Введите "да" или "нет".')
+            bot.register_next_step_handler(message, send_notification, msgu)
+    else:
+        bot.send_message(message.chat.id, 'У вас нет прав! Если вы хотите такого же бота пишите @rikwf')    
 
 bot.infinity_polling()
